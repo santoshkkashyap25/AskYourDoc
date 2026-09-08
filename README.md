@@ -2,11 +2,14 @@
 
 # AskYourDoc
 
-**Modular, high-performance Retrieval-Augmented Generation (RAG) platform.**  
+**High-performance Retrieval-Augmented Generation (RAG) platform.**  
 Upload PDFs, ask questions, and receive grounded answers with exact page citations and live token streaming.
+
+[**🌐 Live Application: https://askyourdoc-s0p9.onrender.com**](https://askyourdoc-s0p9.onrender.com)
 
 <br/>
 
+[![Live Demo](https://img.shields.io/badge/Render-Live%20Demo-46E3B7?style=flat-square&logo=render)](https://askyourdoc-s0p9.onrender.com)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com)
 [![LangGraph](https://img.shields.io/badge/LangGraph-StateGraph-blue?style=flat-square)](https://github.com/langchain-ai/langgraph)
 [![Groq](https://img.shields.io/badge/Groq-Free%20Tier-orange?style=flat-square)](https://console.groq.com)
