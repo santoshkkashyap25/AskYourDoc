@@ -1,17 +1,29 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    HF_HOME=/app/data/hf_cache
+
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y build-essential poppler-utils git && rm -rf /var/lib/apt/lists/*
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
+# Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt waitress
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN python -m nltk.downloader punkt
-
-COPY ./offline_cache/tinyroberta ./offline_cache/tinyroberta
-COPY ./offline_cache/glove-twitter-25 ./offline_cache/glove-twitter-25
-
+# Copy application source
 COPY . .
 
-EXPOSE 5000
-CMD ["waitress-serve", "--host=0.0.0.0", "--port=5000", "app:app"]
+# Ensure storage directories exist
+RUN mkdir -p data/uploads logs
+
+# Expose FastAPI port
+EXPOSE 8000
+
+# Start application
+CMD ["python", "run.py"]
+

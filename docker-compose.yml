@@ -1,0 +1,18 @@
+services:
+  app:
+    build: .
+    container_name: askyourdoc
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - HOST=0.0.0.0
+      - HF_HOME=/app/data/hf_cache
+    volumes:
+      - ./src:/app/src
+      - ./templates:/app/templates
+      - ./static:/app/static
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: unless-stopped

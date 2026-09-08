@@ -23,8 +23,12 @@ Thumbs.db
 # Environment variables
 .env
 
-# Uploaded PDFs (if any are stored temporarily)
+# Uploaded PDFs and data
 /uploads/
-
+/data/
+/logs/
+*.sqlite3
+*.db
+.venv/
 /offline_cache
 /assets.py

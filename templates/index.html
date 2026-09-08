@@ -3,64 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document QA System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>AskYourDoc — Modular RAG Platform</title>
+    <meta name="description" content="Production-ready OOP Standard RAG platform. Upload PDFs and converse with your documents using semantic search and streaming generation.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Main Style -->
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Document Question Answering</h1>
-            <p>Upload PDFs, add text, and ask a question. Get answers using different NLP techniques.</p>
-        </header>
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div class="flash-messages">
-              {% for category, message in messages %}
-                <div class="flash {{ category }}">{{ message }}</div>
-              {% endfor %}
+    <div class="app-layout">
+        <!-- Top Navigation Bar -->
+        <header class="app-header">
+            <div class="header-brand">
+                <div class="logo-badge">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>AskYourDoc</h1>
+                </div>
             </div>
-          {% endif %}
-        {% endwith %}
 
-        <main>
-            <form action="/" method="post" enctype="multipart/form-data">
-                
-                <div class="form-section">
-                    <h2>1. Provide Your Documents</h2>
-                    <div class="input-group">
-                        <label for="pdf_files">Upload PDF Files (Multiple)</label>
-                        <input type="file" id="pdf_files" name="pdf_files" multiple accept=".pdf">
+            <!-- System Metrics & Actions -->
+            <div class="header-status">
+                <div class="status-pill" id="status-engine-pill" title="Active Generator Engine">
+                    <span class="status-dot online"></span>
+                    <span class="status-label">LLM:</span>
+                    <span class="status-val" id="val-llm-provider">{{ llm_provider }}</span>
+                </div>
+                <div class="status-pill" id="status-embed-pill" title="Embedding Model">
+                    <span class="status-label">Embeddings:</span>
+                    <span class="status-val" id="val-embed-model">{{ embedding_model }}</span>
+                </div>
+                <button id="btn-clear-chat" class="btn-icon" title="Clear conversation">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    <span>Clear Chat</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Body: Sidebar + Chat -->
+        <div class="app-body">
+            <!-- Sidebar: Document Management -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-section">
+                    <div class="section-title">
+                        <h2>Upload Document</h2>
                     </div>
-                    <div class="input-group">
-                         <label for="direct_text">Or Paste Text Directly</label>
-                        <textarea id="direct_text" name="direct_text" rows="8" placeholder="Paste any relevant text here..."></textarea>
+
+                    <!-- Drag & Drop Zone -->
+                    <div class="dropzone" id="pdf-dropzone">
+                        <input type="file" id="file-input" accept=".pdf" class="file-input-hidden">
+                        <div class="dropzone-content">
+                            <div class="dropzone-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                            </div>
+                            <p class="dropzone-text"><strong>Click to browse</strong> or drag & drop</p>
+                            <span class="dropzone-hint">Supported: PDF • Max 10 docs • 25 MB total</span>
+                        </div>
+                        <div class="upload-progress-bar" id="upload-progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-section">
-                    <h2>2. Ask a Question</h2>
-                    <div class="input-group">
-                        <label for="question">Your Question</label>
-                        <input type="text" id="question" name="question" required placeholder="e.g., What are the main findings?">
+                <!-- Document List Section -->
+                <div class="sidebar-section docs-section">
+                    <div class="section-title">
+                        <h2>Documents (<span id="doc-count">0</span>/10)</h2>
+                    </div>
+
+                    <div class="documents-list" id="documents-list">
+                        <!-- Dynamic Document Cards injected here -->
+                        <div class="empty-docs-state" id="empty-docs-msg">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                            <p>No documents indexed yet.</p>
+                            <small>Upload a document above to begin asking questions.</small>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Panel: Interactive Chat & Stream -->
+            <main class="chat-container">
+                <!-- Chat Messages Feed -->
+                <div class="chat-feed" id="chat-feed">
+                    <!-- Welcome Card -->
+                    <div class="welcome-card" id="welcome-card">
+                        <div class="welcome-icon">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                            </svg>
+                        </div>
+                        <h2>Ask Your Document Anything</h2>
+                        <p>Upload your research paper, manual, financial report, or book.</p>
+                        
+                        <div class="starter-prompts">
+                            <span class="prompts-label">Try asking:</span>
+                            <button class="prompt-chip" data-prompt="Summarize the core findings of this document.">
+                                "Summarize the core findings"
+                            </button>
+                            <button class="prompt-chip" data-prompt="What are the key methodologies or concepts introduced?">
+                                "Key concepts introduced"
+                            </button>
+                            <button class="prompt-chip" data-prompt="What limitations or conclusions does the author highlight?">
+                                "Limitations or conclusions"
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="form-section">
-                    <h2>3. Choose Answering Technique(s)</h2>
-                    <div class="checkbox-group">
-                        <label><input type="checkbox" name="techniques" value="tfidf" checked> TF-IDF</label>
-                        <label><input type="checkbox" name="techniques" value="bow"> Bag of Words (BoW)</label>
-                        <label><input type="checkbox" name="techniques" value="word_embedding"> Word Embeddings (GloVe)</label>
-                        <label><input type="checkbox" name="techniques" value="transformer"> Transformer (Tiny Roberta)</label>
-                        <label class="compare-all"><input type="checkbox" name="techniques" value="compare_all"> <strong>Compare All</strong></label>
-                    </div>
+                <!-- Chat Input Section -->
+                <div class="chat-input-wrapper">
+                    <form class="chat-input-form" id="chat-form">
+                        <textarea 
+                            id="query-input" 
+                            placeholder="Ask a question about the document..."
+                            rows="1"
+                            required
+                        ></textarea>
+                        
+                        <div class="input-actions">
+                            <button type="submit" id="btn-send" class="btn-send" title="Send question">
+                                <span>Send</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                
-                <button type="submit" class="submit-btn">Get Answer</button>
-            </form>
-        </main>
+            </main>
+        </div>
     </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="/static/js/app.js"></script>
 </body>
 </html>
