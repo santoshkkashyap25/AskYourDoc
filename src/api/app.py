@@ -35,7 +35,7 @@ def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     app = FastAPI(
         title=settings.APP_NAME,
-        description="Modular, Production-Ready OOP Standard RAG Platform for PDF Q&A",
+        description="RAG platform to upload PDFs and ask questions with exact citations",
         version="2.0.0",
         lifespan=lifespan
     )

@@ -91,7 +91,7 @@ class Container:
                 logger.info("Initializing persistent ChromaVectorStore at '%s'", self.settings.CHROMA_PERSIST_DIR)
                 self._vector_store = ChromaVectorStore(persist_directory=self.settings.CHROMA_PERSIST_DIR)
             except (ImportError, Exception) as e:
-                logger.warning("ChromaDB not available (%s). Using high-performance MemoryVectorStore.", e)
+                logger.warning("ChromaDB not available (%s). Falling back to in-memory vector store.", e)
                 self._vector_store = MemoryVectorStore()
         return self._vector_store
 

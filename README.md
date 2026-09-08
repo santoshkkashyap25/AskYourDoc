@@ -2,7 +2,7 @@
 
 # AskYourDoc
 
-**High-performance Retrieval-Augmented Generation (RAG) platform.**  
+**Retrieval-Augmented Generation (RAG) platform for PDF documents.**  
 Upload PDFs, ask questions, and receive grounded answers with exact page citations and live token streaming.
 
 [**🌐 Live Application: https://askyourdoc-s0p9.onrender.com**](https://askyourdoc-s0p9.onrender.com)
