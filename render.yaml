@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: askyourdoc
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      - key: LLM_PROVIDER
+        value: groq
+      - key: GROQ_API_KEY
+        sync: false # Set securely in Render dashboard
+      - key: GROQ_MODEL_NAME
+        value: openai/gpt-oss-20b
+      - key: EMBEDDING_PROVIDER
+        value: sentence_transformers
+      - key: EMBEDDING_MODEL_NAME
+        value: all-MiniLM-L6-v2
+      - key: DEBUG
+        value: "false"
+      - key: MAX_DOCUMENTS
+        value: "10"
+      - key: MAX_TOTAL_STORAGE_MB
+        value: "25"
